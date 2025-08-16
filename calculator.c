@@ -4,20 +4,30 @@
 #include <stdlib.h>
 // This is a simple calculator.
 // Which can calculate plus, minus, multiply, division, square, cube and interest.
-#define MAX_HISTORY 99 // Define maximum number of history entries
-// Global array to store history entries
-char history[MAX_HISTORY][99]; // Each entry can store up to 98 characters + '\0'
+#define MAX_HISTORY 99 // Maximum number of history entries
+char **history = NULL; // Global array to store history entries (dynamically allocated)
 int history_count = 0; // Counter to track number of history entries
 void add_to_history(const char *entry) {
     // Function to add an entry to history
     if (history_count < MAX_HISTORY) {
-        // Safely copy the entry into history array
-        strncpy(history[history_count], entry, 98);
-        history[history_count][98] = '\0'; // Ensure null-termination
-        history_count++; // Increment the count
+        // Allocate memory for the new entry
+        size_t len = strlen(entry) + 1;
+        history[history_count] = (char *)malloc(len);
+        if (history[history_count]) { // Safely copy the entry into history array
+            strncpy(history[history_count], entry, len - 1);
+            history[history_count][len - 1] = '\0'; // Ensure null-termination
+            history_count++; // Increment the count
+        }
     }
 }
 int main() {
+    // Allocate memory for history pointers
+    history = (char **)malloc(MAX_HISTORY * sizeof(char *));
+    if (!history) {
+        // Check if memory allocation for history failed
+        fprintf(stderr, " \e[0m[!!] \e[41mERROR\e[0m\e[1;91m: Failed to allocate memory for history!\e[0m\n");
+        return 1; // Print error and exit if allocation fails
+    }
     system("clear"); // Clear the console
     printf(" \e[1;95m============================================\n");
     printf("  __.         .    __    .      .    ,       \n");
@@ -28,23 +38,42 @@ int main() {
     printf("\n // \e[0;90m\e[3mType 'help' and press enter to see all options.\e[0m //\n");
     // This is headline
     while (1) {
-        char option[20]; // Buffer to hold user input option
+        size_t option_bufsize = 100;
+        char *option = (char *)malloc(option_bufsize);
+        // Dynamically allocate buffer for user input option to avoid buffer overflow
+        if (!option) {
+            // Check if memory allocation for option failed
+            fprintf(stderr, " \e[0m[!!] \e[41mERROR\e[0m\e[1;91m: Failed to allocate memory for option!\e[0m\n");
+            break; // Print error and break loop if allocation fails
+        }
         printf("\n [\e[1;93m$\e[0m] \e[1;96mEnter your option: ");
-        scanf("%s", option);
-        printf("\n");
+        if (fgets(option, option_bufsize, stdin) == NULL) {
+            free(option); // Free the dynamically allocated option buffer at the end of each loop iteration
+            break;
+        } // Use fgets for safe input
+        // Remove trailing newline if present
+        size_t optlen = strlen(option);
+        if (optlen > 0 && option[optlen - 1] == '\n') option[optlen - 1] = '\0';
+        printf("\n"); // Check user input and perform the corresponding operation
         // Input the option
         if (strcmp(option, "plus") == 0) {
             // Addition
             float plus_1, plus_2;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the first number to plus: ");
-                if (scanf("%f", &plus_1) == 1) break;
+                if (scanf("%f", &plus_1) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the second number to plus: ");
-                if (scanf("%f", &plus_2) == 1) break;
+                if (scanf("%f", &plus_2) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
@@ -59,13 +88,19 @@ int main() {
             float minus_1, minus_2;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the first number to minus: ");
-                if (scanf("%f", &minus_1) == 1) break;
+                if (scanf("%f", &minus_1) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the second number to minus: ");
-                if (scanf("%f", &minus_2) == 1) break;
+                if (scanf("%f", &minus_2) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
@@ -80,13 +115,19 @@ int main() {
             float multi_1, multi_2;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the first number to multiply: ");
-                if (scanf("%f", &multi_1) == 1) break;
+                if (scanf("%f", &multi_1) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the second number to multiply: ");
-                if (scanf("%f", &multi_2) == 1) break;
+                if (scanf("%f", &multi_2) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
@@ -101,13 +142,19 @@ int main() {
             float div_1, div_2;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the first number to division: ");
-                if (scanf("%f", &div_1) == 1) break;
+                if (scanf("%f", &div_1) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the second number to division: ");
-                if (scanf("%f", &div_2) == 1) break;
+                if (scanf("%f", &div_2) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
@@ -126,7 +173,10 @@ int main() {
             float num;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter a number to find its square: ");
-                if (scanf("%f", &num) == 1) break;
+                if (scanf("%f", &num) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
@@ -141,7 +191,10 @@ int main() {
             float num;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter a number to find its cube: ");
-                if (scanf("%f", &num) == 1) break;
+                if (scanf("%f", &num) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
@@ -151,12 +204,15 @@ int main() {
             add_to_history(entry);
             printf(" \e[1;93m*-------------------------------------------------*\e[0m\n");
         }
-        else if (strcmp(option, "square_rt") == 0) {
+        else if (strcmp(option, "sroot") == 0) {
             // Square Root
             float num;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter a number to find its square root: ");
-                if (scanf("%f", &num) == 1) break;
+                if (scanf("%f", &num) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
@@ -170,12 +226,15 @@ int main() {
             }
             printf(" \e[1;93m*-------------------------------------------------*\e[0m\n");
         }
-        else if (strcmp(option, "cube_rt") == 0) {
+        else if (strcmp(option, "croot") == 0) {
             // Cube Root
             float num;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter a number to find its cube root: ");
-                if (scanf("%f", &num) == 1) break;
+                if (scanf("%f", &num) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
@@ -194,13 +253,19 @@ int main() {
             float base, exponent;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the base: ");
-                if (scanf("%f", &base) == 1) break;
+                if (scanf("%f", &base) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the exponent: ");
-                if (scanf("%f", &exponent) == 1) break;
+                if (scanf("%f", &exponent) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
@@ -215,19 +280,28 @@ int main() {
             float principal, rate, time;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the principal amount: ");
-                if (scanf("%f", &principal) == 1) break;
+                if (scanf("%f", &principal) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the interest rate: ");
-                if (scanf("%f", &rate) == 1) break;
+                if (scanf("%f", &rate) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the time (in years): ");
-                if (scanf("%f", &time) == 1) break;
+                if (scanf("%f", &time) == 1) {
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
+                }
                 printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a number value!\e[0m\n");
                 while (getchar() != '\n'); // Clear the input buffer
             }
@@ -237,7 +311,7 @@ int main() {
             add_to_history(entry);
             printf(" \e[1;93m*-------------------------------------------------*\e[0m\n");
         }
-        else if (strcmp(option, "finday") == 0) {
+        else if (strcmp(option, "day") == 0) {
             // Find The Day
             int findDay(int year, int month, int day) {
                 if (month < 3) {
@@ -257,29 +331,29 @@ int main() {
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the day: ");
                 if (scanf("%d", &day) == 1 && day >= 1 && day <= 31) {
-                    break;
-                } else {
-                    printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease enter a valid day!\e[0m\n");
-                    while (getchar() != '\n'); // Clear input buffer
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
                 }
+                printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease enter a valid day!\e[0m\n");
+                while (getchar() != '\n'); // Clear input buffer
             }
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the month: ");
                 if (scanf("%d", &month) == 1 && month >= 1 && month <= 12) {
-                    break;
-                } else {
-                    printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease enter a valid month!\e[0m\n");
-                    while (getchar() != '\n'); // Clear input buffer
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
                 }
+                printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease enter a valid month!\e[0m\n");
+                while (getchar() != '\n'); // Clear input buffer
             }
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the year: ");
                 if (scanf("%d", &year) == 1 && year >= 1) {
-                    break;
-                } else {
-                    printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease enter a valid year!\e[0m\n");
-                    while (getchar() != '\n'); // Clear input buffer
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
                 }
+                printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease enter a valid year!\e[0m\n");
+                while (getchar() != '\n'); // Clear input buffer
             }
             int dayOfWeek = findDay(year, month, day);
             const char *days[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
@@ -293,17 +367,17 @@ int main() {
             }
             printf(" \e[1;93m*-------------------------------------------------*\e[0m\n");
         }
-        else if (strcmp(option, "multi_tb") == 0) {
+        else if (strcmp(option, "table") == 0) {
             // Multiplication Table
             int table;
             while (1) {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the number for multiplication table: ");
                 if (scanf("%d", &table) == 1) {
-                    break;
-                } else {
-                    printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease enter a valid number!\e[0m\n");
-                    while (getchar() != '\n'); // Clear the input buffer
+                    while (getchar() != '\n');
+                    break; // Clear the input buffer and break
                 }
+                printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease enter a valid number!\e[0m\n");
+                while (getchar() != '\n'); // Clear the input buffer
             }
             printf("\n [=] \e[42mANSWER\e[0m\e[1;92m:\n");
             for (int i = 1; i <= 10; i++) {
@@ -322,14 +396,14 @@ int main() {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the angle in degrees: ");
                 if (scanf("%f", &angle) == 1) {
                     printf("\n [=] \e[42mANSWER\e[0m\e[1;92m: Sin(%.2f) = %.4f\e[0m\n", angle, sin(angle * M_PI / 180));
+                    while (getchar() != '\n'); // Clear the input buffer
                     char entry[99]; // Format and store in history
                     snprintf(entry, sizeof(entry), "Sin(%.2f) = %.4f", angle, sin(angle * M_PI / 180));
                     add_to_history(entry);
                     break;
-                } else {
-                    printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a valid angle!\e[0m\n");
-                    while (getchar() != '\n'); // Clear the input buffer
                 }
+                printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a valid angle!\e[0m\n");
+                while (getchar() != '\n'); // Clear the input buffer
             }
             printf(" \e[1;93m*-------------------------------------------------*\e[0m\n");
         }
@@ -340,14 +414,14 @@ int main() {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the angle in degrees: ");
                 if (scanf("%f", &angle) == 1) {
                     printf("\n [=] \e[42mANSWER\e[0m\e[1;92m: Cos(%.2f) = %.4f\e[0m\n", angle, cos(angle * M_PI / 180));
+                    while (getchar() != '\n'); // Clear the input buffer
                     char entry[99]; // Format and store in history
                     snprintf(entry, sizeof(entry), "Cos(%.2f) = %.4f", angle, cos(angle * M_PI / 180));
                     add_to_history(entry);
                     break;
-                } else {
-                    printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a valid angle!\e[0m\n");
-                    while (getchar() != '\n'); // Clear the input buffer
                 }
+                printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a valid angle!\e[0m\n");
+                while (getchar() != '\n'); // Clear the input buffer
             }
             printf(" \e[1;93m*-------------------------------------------------*\e[0m\n");
         }
@@ -358,14 +432,14 @@ int main() {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter the angle in degrees: ");
                 if (scanf("%f", &angle) == 1) {
                     printf("\n [=] \e[42mANSWER\e[0m\e[1;92m: Tan(%.2f) = %.4f\e[0m\n", angle, tan(angle * M_PI / 180));
+                    while (getchar() != '\n'); // Clear the input buffer
                     char entry[99]; // Format and store in history
                     snprintf(entry, sizeof(entry), "Tan(%.2f) = %.4f", angle, tan(angle * M_PI / 180));
                     add_to_history(entry);
                     break;
-                } else {
-                    printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a valid angle!\e[0m\n");
-                    while (getchar() != '\n'); // Clear the input buffer
                 }
+                printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a valid angle!\e[0m\n");
+                while (getchar() != '\n'); // Clear the input buffer
             }
             printf(" \e[1;93m*-------------------------------------------------*\e[0m\n");
         }
@@ -376,14 +450,14 @@ int main() {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter a number to find its natural logarithm: ");
                 if (scanf("%f", &num) == 1 && num > 0) {
                     printf("\n [=] \e[42mANSWER\e[0m\e[1;92m: Log(%.2f) = %.4f\e[0m\n", num, log(num));
+                    while (getchar() != '\n'); // Clear the input buffer
                     char entry[99]; // Format and store in history
                     snprintf(entry, sizeof(entry), "Log(%.2f) = %.4f", num, log(num));
                     add_to_history(entry);
                     break;
-                } else {
-                    printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a valid positive number!\e[0m\n");
-                    while (getchar() != '\n'); // Clear the input buffer
                 }
+                printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a valid positive number!\e[0m\n");
+                while (getchar() != '\n'); // Clear the input buffer
             }
             printf(" \e[1;93m*-------------------------------------------------*\e[0m\n");
         }
@@ -394,14 +468,14 @@ int main() {
                 printf(" \e[0m[\e[1;92mo\e[0m] Enter a number to find its logarithm base 10: ");
                 if (scanf("%f", &num) == 1 && num > 0) {
                     printf("\n [=] \e[42mANSWER\e[0m\e[1;92m: Log10(%.2f) = %.4f\e[0m\n", num, log10(num));
+                    while (getchar() != '\n'); // Clear the input buffer
                     char entry[99]; // Format and store in history
                     snprintf(entry, sizeof(entry), "Log10(%.2f) = %.4f", num, log10(num));
                     add_to_history(entry);
                     break;
-                } else {
-                    printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a valid positive number!\e[0m\n");
-                    while (getchar() != '\n'); // Clear the input buffer
                 }
+                printf(" [\e[1;91mx\e[0m] OOPS: \e[1;91mPlease Enter a valid positive number!\e[0m\n");
+                while (getchar() != '\n'); // Clear the input buffer
             }
             printf(" \e[1;93m*-------------------------------------------------*\e[0m\n");
         }
@@ -413,12 +487,12 @@ int main() {
             printf(" (\e[1;96m@\e[0m) Enter \e[44m'div'\e[0m to select \e[0;36mDivision.\e[0m\n");
             printf(" (\e[1;96m@\e[0m) Enter \e[44m'square'\e[0m to select \e[0;36mSquare.\e[0m\n");
             printf(" (\e[1;96m@\e[0m) Enter \e[44m'cube'\e[0m to select \e[0;36mCube.\e[0m\n");
-            printf(" (\e[1;96m@\e[0m) Enter \e[44m'square_rt'\e[0m to select \e[0;36mSquare Root.\e[0m\n");
-            printf(" (\e[1;96m@\e[0m) Enter \e[44m'cube_rt'\e[0m to select \e[0;36mCube Root.\e[0m\n");
+            printf(" (\e[1;96m@\e[0m) Enter \e[44m'sroot'\e[0m to select \e[0;36mSquare Root.\e[0m\n");
+            printf(" (\e[1;96m@\e[0m) Enter \e[44m'croot'\e[0m to select \e[0;36mCube Root.\e[0m\n");
             printf(" (\e[1;96m@\e[0m) Enter \e[44m'power'\e[0m to select \e[0;36mPower.\e[0m\n");
             printf(" (\e[1;96m@\e[0m) Enter \e[44m'interest'\e[0m to select \e[0;36mInterest.\e[0m\n");
-            printf(" (\e[1;96m@\e[0m) Enter \e[44m'finday'\e[0m to select \e[0;36mFind The Day.\e[0m\n");
-            printf(" (\e[1;96m@\e[0m) Enter \e[44m'multi_tb'\e[0m to select \e[0;36mMultiplication Table.\e[0m\n");
+            printf(" (\e[1;96m@\e[0m) Enter \e[44m'day'\e[0m to select \e[0;36mFind The Day.\e[0m\n");
+            printf(" (\e[1;96m@\e[0m) Enter \e[44m'table'\e[0m to select \e[0;36mMultiplication Table.\e[0m\n");
             printf(" (\e[1;96m@\e[0m) Enter \e[44m'sin'\e[0m to select \e[0;36mSine.\e[0m\n");
             printf(" (\e[1;96m@\e[0m) Enter \e[44m'cos'\e[0m to select \e[0;36mCosine.\e[0m\n");
             printf(" (\e[1;96m@\e[0m) Enter \e[44m'tan'\e[0m to select \e[0;36mTangent.\e[0m\n");
@@ -478,13 +552,18 @@ int main() {
         else if (strcmp(option, "quit") == 0) {
             system("clear"); // Clear the console
             printf("\n \e[1;94m~~~~~\\\\ ::: \e[0m\e[43mGood Bye\e[0m\e[1;94m ::: //~~~~~\e[0m\n\n");
+            free(option); // Free the dynamically allocated option buffer before exiting
             break; // Exit the program
         }
         else {
             // Error
             printf(" \e[0m[!!] \e[41mERROR\e[0m\e[1;91m: You have entered an invalid option!\e[0m\n");
         }
+        free(option); // Free the dynamically allocated option buffer at the end of each loop iteration
     }
+    for (int i = 0; i < history_count; i++) {
+        free(history[i]); // Free dynamically allocated history
+    }
+    free(history); // Free dynamically allocated history at the end of the program
     return 0; // Successfully exit this program
-}
-// End of this code
+} // End of this code
